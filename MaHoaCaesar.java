@@ -31,7 +31,7 @@ public class MaHoaCaesar {
         while (true) {
             System.out.println("Menu:");
             System.out.println("1. Nhập dữ liệu vào file");
-            System.out.println("2. Hiển thị nội dung file inputs");
+            System.out.println("2. Hiển thị nội dung file input");
             System.out.println("3. Mã hóa");
             System.out.println("4. Giải mã");
             System.out.println("6. Hiển thị nội dung file output");
