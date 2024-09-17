@@ -34,8 +34,8 @@ public class MaHoaCaesar {
             System.out.println("2. Hiển thị nội dung file input");
             System.out.println("3. Mã hóa");
             System.out.println("4. Giải mã");
-            System.out.println("6. Hiển thị nội dung file output");
-            System.out.println("5. Thoát");
+            System.out.println("5. Hiển thị nội dung file output");
+            System.out.println("6. Thoát");
 
             System.out.print("Nhập lựa chọn của bạn: ");
             int choice = scanner.nextInt();
@@ -84,8 +84,8 @@ public class MaHoaCaesar {
                     }
                     break;
                 case 4:
-                    // Giải mã
-                    try (Scanner reader = new Scanner(new File(inputFile))) {
+                    // Giải mã và hoán đổi nội dung file
+                    try (Scanner reader = new Scanner(new File(outputFile))) { // Đọc từ file output.txt
                         StringBuilder content = new StringBuilder();
                         while (reader.hasNextLine()) {
                             content.append(reader.nextLine());
@@ -93,9 +93,9 @@ public class MaHoaCaesar {
                         System.out.print("Nhập số bước dịch: ");
                         int step = scanner.nextInt();
                         String decrypted = giaiMa(content.toString(), step);
-                        try (FileWriter writer = new FileWriter(outputFile)) {
+                        try (FileWriter writer = new FileWriter(inputFile)) { // Ghi vào file input.txt
                             writer.write(decrypted);
-                            System.out.println("Đã ghi kết quả giải mã vào file thành công!");
+                            System.out.println("Đã ghi kết quả giải mã vào file input thành công!");
                         } catch (IOException e) {
                             System.out.println("Lỗi khi ghi vào file: " + e.getMessage());
                         }
@@ -103,9 +103,9 @@ public class MaHoaCaesar {
                         System.out.println("Lỗi khi đọc file: " + e.getMessage());
                     }
                     break;
+
+
                 case 5:
-                    System.exit(0);
-                case 6:
                     // Đọc nội dung từ file và hiển thị
                     try (Scanner reader = new Scanner(new File(outputFile))) {
                         System.out.println("Nội dung file output:");
@@ -118,6 +118,9 @@ public class MaHoaCaesar {
                     break;
                 default:
                     System.out.println("Lựa chọn không hợp lệ!");
+                    break;
+                case 6:
+                    System.exit(0);
             }
         }
     }
