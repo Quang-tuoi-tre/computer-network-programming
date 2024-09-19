@@ -1,11 +1,18 @@
 package Input_Output_Stream;
 
-import java.util.Scanner;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Scanner;
 
 public class MaHoaCaesar {
+   
+
+   
+  
+   
+   
+
     public static String maHoa(String text, int step) {
         StringBuilder result = new StringBuilder();
         for (char c : text.toCharArray()) {
@@ -16,6 +23,7 @@ public class MaHoaCaesar {
                 result.append(c);
             }
         }
+
         return result.toString();
     }
 
@@ -36,8 +44,8 @@ public class MaHoaCaesar {
             System.out.println("4. Giải mã");
             System.out.println("5. Hiển thị nội dung file output");
             System.out.println("6. Thoát");
-
             System.out.print("Nhập lựa chọn của bạn: ");
+            System.out.println();
             int choice = scanner.nextInt();
 
             switch (choice) {
