@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.regex.*;
 import org.jsoup.Jsoup;
@@ -38,19 +39,28 @@ public class SimpleSearchEngine {
         visitedLinks.add(url);
 
         try {
-            Document doc = Jsoup.connect(url).get();
-            String pageContent = doc.text().toLowerCase();
+            Document doc = Jsoup.connect(url)
+                            .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                            .timeout(10000)
+                            .get();
+        
+            // Lấy nội dung từ các thẻ có ý nghĩa
+            String pageContent = doc.select("body").text() + " " + doc.select("title").text() + " " + doc.select("meta[name=description]").attr("content");
+            pageContent = pageContent.toLowerCase();
 
             // Đếm số lần từ khóa xuất hiện trong trang
             int count = countKeywordInPage(pageContent, keyword.toLowerCase());
             if (count > 0) {
                 keywordCountMap.put(url, count);
+                System.out.println("Found " + count + " occurrences of '" + keyword + "' at: " + url); // Debug output
             }
 
             Elements links = doc.select("a[href]");
             for (Element link : links) {
                 String absUrl = link.absUrl("href");
-                if (!visitedLinks.contains(absUrl)) {
+
+                // Bỏ qua những URL không hợp lệ hoặc ngoài domain
+                if (isValidUrl(absUrl) && isSameDomain(url, absUrl) && !visitedLinks.contains(absUrl)) {
                     crawlWebsite(absUrl, keyword, depth - 1, visitedLinks);
                 }
             }
@@ -59,10 +69,24 @@ public class SimpleSearchEngine {
         }
     }
 
+    private static boolean isValidUrl(String url) {
+        return url.startsWith("http") && !url.contains("javascript:") && !url.endsWith(".pdf");
+    }
+
+    private static boolean isSameDomain(String baseUrl, String url) {
+        try {
+            String baseDomain = new URL(baseUrl).getHost();
+            String urlDomain = new URL(url).getHost();
+            return urlDomain.equals(baseDomain) || urlDomain.endsWith("." + baseDomain);
+        } catch (MalformedURLException e) {
+            return false;
+        }
+    }
+
     // Đếm số lần từ khóa xuất hiện trong trang
     public static int countKeywordInPage(String content, String keyword) {
         int count = 0;
-        Pattern pattern = Pattern.compile("\\b" + keyword + "\\b", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("\\b" + Pattern.quote(keyword) + "\\b", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(content);
 
         while (matcher.find()) {
@@ -93,4 +117,65 @@ public class SimpleSearchEngine {
             System.out.println("Lỗi khi lưu kết quả vào file.");
         }
     }
+ /* private static final int MAX_DEPTH = 2; // Độ sâu tìm kiếm mặc định
+    private static Set<String> visitedUrls = new HashSet<>();
+    private static Map<String, Integer> searchResults = new TreeMap<>(new Comparator<String>() {
+        @Override
+        public int compare(String url1, String url2) {
+            return searchResults.get(url2) - searchResults.get(url1);
+        }
+    });
+
+    public static void main(String[] args) throws IOException {
+        Scanner scanner = new Scanner(System.in);
+
+        // Nhập địa chỉ website ban đầu và độ sâu tìm kiếm
+        System.out.print("Nhập địa chỉ website ban đầu: ");
+        String startUrl = scanner.nextLine();
+        System.out.print("Nhập độ sâu tìm kiếm (mặc định: " + MAX_DEPTH + "): ");
+        int depth = scanner.hasNextInt() ? scanner.nextInt() : MAX_DEPTH;
+
+        // Nhập từ khóa cần tìm kiếm
+        System.out.print("Nhập từ khóa cần tìm kiếm: ");
+        String keyword = scanner.next();
+
+        // Bắt đầu quá trình crawl và tìm kiếm
+        crawl(startUrl, depth, keyword);
+
+        // Lưu kết quả vào file
+        try (PrintWriter writer = new PrintWriter(new FileWriter("searchResults.txt"))) {
+            for (Map.Entry<String, Integer> entry : searchResults.entrySet()) {
+                writer.println(entry.getKey() + " (" + entry.getValue() + " lần)");
+            }
+        }
+    }
+
+    private static void crawl(String url, int depth, String keyword) throws IOException {
+        if (depth <= 0 || visitedUrls.contains(url)) {
+            return;
+        }
+
+        visitedUrls.add(url);
+
+        try {
+            Document doc = Jsoup.connect(url).get();
+            Elements links = doc.select("a[href]");
+
+            for (Element link : links)
+            {
+                String nextLink = link.absUrl("href");
+                crawl(nextLink, depth - 1, keyword);
+            }
+
+            // Tìm kiếm từ khóa trong nội dung trang
+            int count = doc.body().text().toLowerCase().split("\\s+").length - doc.body().text().toLowerCase().replaceAll(keyword.toLowerCase(), "").split("\\s+").length;
+            if (count > 0) {
+                Integer existingCount = searchResults.get(url); // Get existing count
+                count = existingCount != null ? count + existingCount : count; // Add existing count if not null
+                searchResults.put(url, count);
+            }
+        } catch (IOException e) {
+            System.err.println("Lỗi khi crawl: " + e.getMessage());
+        }
+    }*/
 }
